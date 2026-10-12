@@ -1,6 +1,6 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/hero-dark.png">
-  <img alt="Rekku: from notes to exam-ready. Not released yet, coming soon." src="assets/hero-light.png" width="100%">
+  <img alt="Rekku, the study coach that gets you to exam day. Your exam has a date. Now it has a plan. Coming soon, join the waitlist at rekku.net." src="assets/hero-light.png" width="100%">
 </picture>
 
 <p align="center">
