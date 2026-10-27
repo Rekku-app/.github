@@ -1,0 +1,4 @@
+# Changes here change every Rekku repository's rules and checks.
+# Code owners: the organization's maintainers (owner input: replace with a
+# team, e.g. @Rekku-app/maintainers, once there is one).
+* @Oltsu-code @otsuli

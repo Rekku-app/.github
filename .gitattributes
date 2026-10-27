@@ -1,0 +1,15 @@
+# LF everywhere, so files are identical on every OS (embedded prompts and the
+# API specs must be byte-identical). The same file in every Rekku repository
+# (Rekku-app/.github).
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.pdf binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
