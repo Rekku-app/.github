@@ -97,7 +97,9 @@ checkout of Rekku-app/.github; CI (`org-files`) fails while they differ.
   with its version in a comment (`uses: actions/checkout@<sha> # v7.0.1`).
   Docker base images and Cloud Build builder images are pinned by
   `sha256` digest. Dependabot updates both, with the same rules in every
-  repository.
+  repository. One exception: the `/load-test` callers use rekku-loadtest's
+  `run.yml@main`, because Google Cloud trusts only its workflows on main
+  (rekku-infra, bootstrap); main there is protected and code-owned.
 - Only GitHub-owned and verified actions run. Other tools are installed from
   their release, pinned by checksum (gitleaks, k6, tflint, trivy).
 - Install with `npm ci --ignore-scripts` (CI, Docker): dependencies' install
