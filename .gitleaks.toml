@@ -1,0 +1,17 @@
+# gitleaks (the secrets check in CI) with its default rules, except for the
+# two Identity Platform web API keys ("Browser key (auto created by
+# Firebase)"). They're public client configuration: every browser and app
+# gets them, and they may call only Identity Toolkit and Token Service
+# (rekku-infra, modules/project). Only these exact values are allowed, under
+# any rule; any other key still fails the check. The same file in every
+# Rekku repository (Rekku-app/.github).
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Identity Platform web API keys of rekku-509915 (dev) and rekku-prod"
+regexTarget = "secret"
+regexes = [
+  '''^AIzaSyAtmbA7geWbKRZKcuSQaw9TyBBy4k0jDrs$''', # rekku-509915
+  '''^AIzaSyC0uBBDrP12-ZXC-cMwAAV_561yeMYB0TI$''', # rekku-prod
+]

@@ -1,0 +1,42 @@
+name: Organization files
+
+# Called by every Rekku repository's CI (job org-files). Fails when the
+# repository's copy of an organization file differs from the canonical one
+# here: the org rules in CLAUDE.md (ORG_RULES.md), the pull request template
+# (except its repo-specific block), .gitattributes, .gitleaks.toml, LICENSE,
+# AGENTS.md and scripts/bootstrap.mjs (scripts/org-files.sh has the list).
+#
+# Callers pin this workflow to a commit SHA, so the check's code can't change
+# under them; the canonical files are read from main (canonical-ref), so a
+# change here shows up as drift everywhere until each repository is synced
+# with `scripts/org-files.sh sync`.
+on:
+  workflow_call:
+    inputs:
+      canonical-ref:
+        description: The ref of Rekku-app/.github to compare with
+        type: string
+        default: main
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: repo
+          persist-credentials: false
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: Rekku-app/.github
+          ref: ${{ inputs.canonical-ref }}
+          path: org
+          persist-credentials: false
+
+      - name: Compare with Rekku-app/.github
+        run: bash org/scripts/org-files.sh check repo

@@ -1,0 +1,19 @@
+# The same rules in every Rekku repository (ORG_RULES.md, "CI and
+# dependencies"). Commits read chore(deps): …; updates wait a week after a
+# release (cooldown), so a bad or compromised release has time to be pulled.
+version: 2
+updates:
+  # Action bumps come in one pull request, so CI runs once instead of once
+  # per action. Dependabot keeps the SHA pins and their version comments.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      actions:
+        patterns: ["*"]
