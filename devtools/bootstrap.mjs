@@ -60,10 +60,17 @@ if (config.githubPackages) {
   // @rekku-app/shared (the code shared between the Rekku apps) is private to
   // the Rekku-app organization, on GitHub Packages. npm reads it with the
   // GitHub token in NODE_AUTH_TOKEN (.npmrc). Without one, this install
-  // borrows the GitHub CLI's token. The token is never printed or written.
+  // borrows the GitHub CLI's token, once. The token is never printed or
+  // written. For every day, a token that can do nothing but read packages:
+  // the GitHub CLI's can push code and run workflows, so it doesn't belong
+  // in a shell profile. GitHub Packages' npm registry takes only classic
+  // tokens, not fine-grained ones.
   const SET_TOKEN =
-    "in your shell profile: export NODE_AUTH_TOKEN=$(gh auth token)\n" +
-    "          (PowerShell, in $PROFILE: $env:NODE_AUTH_TOKEN = gh auth token)";
+    "make a classic token with only read:packages and an expiry\n" +
+    "          (https://github.com/settings/tokens/new?scopes=read:packages&description=rekku-packages),\n" +
+    "          save it in ~/.config/rekku/packages-token (chmod 600), and in your shell profile:\n" +
+    '          export NODE_AUTH_TOKEN="$(cat ~/.config/rekku/packages-token)"\n' +
+    "          (PowerShell, in $PROFILE: $env:NODE_AUTH_TOKEN = Get-Content ~/.config/rekku/packages-token)";
   const SCOPE = "gh auth refresh -h github.com -s read:packages";
   const NEED = "NODE_AUTH_TOKEN (npm needs a GitHub token that may read packages for @rekku-app/shared)";
   if (process.env.NODE_AUTH_TOKEN) {
