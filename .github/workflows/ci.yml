@@ -1,0 +1,88 @@
+name: CI
+
+# This repository's own checks: the workflows (actionlint, which runs
+# shellcheck on their scripts), the scripts (shellcheck), the org-files
+# script against a scratch repository, this repository's own copies of the
+# organization files, and secrets (gitleaks).
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # The organization allows only GitHub-owned and verified actions, so
+      # actionlint is installed from its release, pinned by checksum.
+      - name: Install actionlint
+        env:
+          VERSION: 1.7.12
+          SHA256: 8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8
+        run: |
+          cd "$RUNNER_TEMP"
+          tarball="actionlint_${VERSION}_linux_amd64.tar.gz"
+          curl -sSfLO "https://github.com/rhysd/actionlint/releases/download/v${VERSION}/${tarball}"
+          echo "${SHA256}  ${tarball}" | sha256sum -c -
+          tar -xzf "$tarball" actionlint
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Lint the workflows
+        run: actionlint
+
+      - name: Lint the scripts
+        run: shellcheck scripts/*.sh
+
+      - name: Test org-files.sh
+        run: bash scripts/test-org-files.sh
+
+      - name: This repository's own copies
+        run: bash scripts/org-files.sh check .
+
+  secrets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The organization allows only GitHub-owned and verified actions, so
+      # gitleaks is installed from its release, pinned by checksum.
+      - name: Install gitleaks
+        env:
+          VERSION: 8.30.1
+          SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          cd "$RUNNER_TEMP"
+          tarball="gitleaks_${VERSION}_linux_x64.tar.gz"
+          curl -sSfLO "https://github.com/gitleaks/gitleaks/releases/download/v${VERSION}/${tarball}"
+          echo "${SHA256}  ${tarball}" | sha256sum -c -
+          tar -xzf "$tarball" gitleaks
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+
+      - name: Scan new commits for secrets
+        env:
+          BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          if [ -z "$BASE" ] || [ "$BASE" = "0000000000000000000000000000000000000000" ]; then
+            range="-1 $HEAD"
+          else
+            range="$BASE..$HEAD"
+          fi
+          gitleaks git --redact --no-banner --log-opts="$range" .
