@@ -8,6 +8,8 @@ on:
   push:
     branches: ["main"]
   pull_request:
+    # Draft pull requests are skipped (every job's if); marking one ready for review runs them.
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: ["main"]
 
 permissions:
@@ -19,6 +21,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -53,6 +56,7 @@ jobs:
         run: bash scripts/org-files.sh check .
 
   secrets:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
